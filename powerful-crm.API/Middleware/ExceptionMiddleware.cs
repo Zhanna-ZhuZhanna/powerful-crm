@@ -26,9 +26,9 @@ namespace powerful_crm.API.Middleware
             {
                 await _next(httpContext);
             }
-            catch (CustomValidationException ex)
+            catch (CustomException ex)
             {
-                await HandleValidationExceptionAsync(httpContext, ex);
+                await HandleCustomExceptionAsync(httpContext, ex);
             }
             catch (SqlException ex)
             {
@@ -40,7 +40,7 @@ namespace powerful_crm.API.Middleware
             }
         }
 
-        private Task HandleValidationExceptionAsync(HttpContext context, CustomValidationException exception)
+        private Task HandleCustomExceptionAsync(HttpContext context, CustomException exception)
         {
             ModifyContextResponse(context, exception.StatusCode);
             return ConstructResponse(context, exception.StatusCode, exception.ErrorMessage);
@@ -53,10 +53,10 @@ namespace powerful_crm.API.Middleware
                 {
                 case Constants.LOGIN_UNIQUE_CONSTRAINT:
                     ModifyContextResponse(context, (int)HttpStatusCode.Conflict);
-                    return ConstructResponse(context, 409, "This login is already in use.");
+                    return ConstructResponse(context, 409, Constants.ERROR_NOT_UNIQUE_LOGIN);
                 case Constants.EMAIL_UNIQUE_CONSTRAINT:
                     ModifyContextResponse(context, (int)HttpStatusCode.Conflict);
-                    return ConstructResponse(context, 409, "This email is already in use.");
+                    return ConstructResponse(context, 409, Constants.ERROR_NOT_UNIQUE_EMAIL);
                 default:
                     return HandleExceptionAsync(context, exception);
             }
